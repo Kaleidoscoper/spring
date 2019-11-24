@@ -44,9 +44,11 @@ public class AspectJAfterAdvice extends AbstractAspectJAdvice
 	@Override
 	public Object invoke(MethodInvocation mi) throws Throwable {
 		try {
+			//本拦截器是后置拦截器对象，执行下一个通知
 			return mi.proceed();
 		}
 		finally {
+			//后置通知在finally中即使出现异常也会执行
 			invokeAdviceMethod(getJoinPointMatch(), null, null);
 		}
 	}

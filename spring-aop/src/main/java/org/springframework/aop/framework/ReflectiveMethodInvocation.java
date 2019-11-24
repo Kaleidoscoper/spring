@@ -88,6 +88,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	/**
 	 * Index from 0 of the current interceptor we're invoking.
 	 * -1 until we invoke: then the current interceptor.
+	 * 方法执行拦截器的执行下标，开始为-1
 	 */
 	private int currentInterceptorIndex = -1;
 
@@ -157,12 +158,18 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 
 	@Override
 	@Nullable
+	//!!!Mark通知执行和信逻辑！责任链模式
 	public Object proceed() throws Throwable {
-		// We start with an index of -1 and increment early.
+		// We start with an index of -1 and increment early.从-1开始
+		//currentInterceptorIndex每次调用都会自加1，责任链模式，依次递归执行通知拦截器，倒数第二次会执行前置通知，之后才会进入到if中
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+			//递归结束就是要执行目标方法
 			return invokeJoinpoint();
 		}
 
+		/**
+		 * 获取第一个方法拦截器是用的是前++
+		 */
 		Object interceptorOrInterceptionAdvice =
 				this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
 		if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
@@ -183,6 +190,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		else {
 			// It's an interceptor, so we just invoke it: The pointcut will have
 			// been evaluated statically before this object was constructed.
+			//这个地方需要注意，抵用第一个拦截器的invoke方法，传入的是this当前的方法拦截器对象
 			return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 		}
 	}

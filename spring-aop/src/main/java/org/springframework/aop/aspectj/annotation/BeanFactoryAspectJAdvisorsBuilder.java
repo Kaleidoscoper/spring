@@ -80,34 +80,53 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	 * @return the list of {@link org.springframework.aop.Advisor} beans
 	 * @see #isEligibleBean
 	 */
+	//Mark
 	public List<Advisor> buildAspectJAdvisors() {
+		//用于保存切面的名称，该地方aspectNames是我们的类级别的缓存，用户缓存已经解析出来的切面信息，例子中是LogAspect
 		List<String> aspectNames = this.aspectBeanNames;
-
+		//缓存字段aspectNames没有值，表示实例化第一个单实例bean的时候就会触发解析切面的操作
+		//AbstractAutowireCapableBeanFactory:532 会促使进入到if中
 		if (aspectNames == null) {
+			//做了dcl检查
 			synchronized (this) {
 				aspectNames = this.aspectBeanNames;
 				if (aspectNames == null) {
+					//用于保存所有解析出来的Advisors集合
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
+					/**
+					 * aop功能中在这里传入的是Object对象，代表去容器中获取到所有的组建的名称，再经过
+					 * 一一进行遍历，这个过程是十分消耗性能的，所以spring会在这里加入保存切面信息的缓存。
+					 * 但是事务功能不一样，事务模块的功能是直接去容器中获取Advisor类型的(Advisor.class)，选择范围小，且不消耗性能
+					 * 所以spring在事务模块中没有加入缓存来保存我们事务相关的Advisor
+					 */
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
+					//遍历我们从IOC容器中获取的所有bean的名称
 					for (String beanName : beanNames) {
 						if (!isEligibleBean(beanName)) {
 							continue;
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
+						//通过beanName去获取到对应的class对象
 						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
+						//根据class对象判断是不是切面
 						if (this.advisorFactory.isAspect(beanType)) {
+							//是切面类加入到缓存中
 							aspectNames.add(beanName);
+							//把beanName和class对象构建成一个AspectMetaData
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
+								//构建切面注解的实例工厂
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+								//！！！真正的去获取我们的实例工厂
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+								//！！！通知加入到缓存中
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);
 								}
@@ -138,8 +157,10 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 		if (aspectNames.isEmpty()) {
 			return Collections.emptyList();
 		}
+		//真正的创建切面的时候，我们不需要去解析而是直接去缓存中获取
 		List<Advisor> advisors = new ArrayList<>();
 		for (String aspectName : aspectNames) {
+			//例子中是四个通知。methodBefore，methodAfter，methodReturning，methodThrowing
 			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
 			if (cachedAdvisors != null) {
 				advisors.addAll(cachedAdvisors);

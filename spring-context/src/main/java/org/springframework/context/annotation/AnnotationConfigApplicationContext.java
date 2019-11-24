@@ -90,6 +90,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		this();
 		//componentClasses是用注解扫描到的Component类
 		register(componentClasses);
+		//IOC容器刷新接口
 		refresh();
 	}
 

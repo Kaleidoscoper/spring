@@ -8,11 +8,12 @@ public class Person implements InitializingBean {
 	private String name;
 	private String sex;
 
+	////第三个执行
 	public void initPerson(){
 		System.out.println("init 方法");
 	}
 
-	@PostConstruct
+	@PostConstruct//第一个执行
 	public void init(){
 		System.out.println("PostContruct init");
 	}
@@ -33,7 +34,7 @@ public class Person implements InitializingBean {
 		this.sex = sex;
 	}
 
-	@Override
+	@Override //第二个执行
 	public void afterPropertiesSet() throws Exception {
 		System.out.println("afterPropertiesSet");
 	}

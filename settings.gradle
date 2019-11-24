@@ -38,4 +38,5 @@ rootProject.children.each {project ->
 	project.buildFileName = "${project.name}.gradle"
 }
 include 'spring-demo-test'
+include 'spring-demo-aop'
 
