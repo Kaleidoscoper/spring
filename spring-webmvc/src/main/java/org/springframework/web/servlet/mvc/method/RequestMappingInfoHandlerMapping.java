@@ -109,6 +109,7 @@ public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMe
 	 * @see HandlerMapping#PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE
 	 */
 	@Override
+	//Mark!!!解析URL和目标方法的Map映射？
 	protected void handleMatch(RequestMappingInfo info, String lookupPath, HttpServletRequest request) {
 		super.handleMatch(info, lookupPath, request);
 

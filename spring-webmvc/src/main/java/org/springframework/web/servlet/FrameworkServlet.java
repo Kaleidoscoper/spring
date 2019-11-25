@@ -519,6 +519,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * have been set. Creates this servlet's WebApplicationContext.
 	 */
 	@Override
+	//Mark
 	protected final void initServletBean() throws ServletException {
 		getServletContext().log("Initializing Spring " + getClass().getSimpleName() + " '" + getServletName() + "'");
 		if (logger.isInfoEnabled()) {
@@ -557,24 +558,37 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
 	 */
+	//Mark!!!初始化子容器，装载组件
 	protected WebApplicationContext initWebApplicationContext() {
+		/**
+		 * 从我们的sc对象中获取到父容器，为啥可以获取，因为父容器创建成功后
+		 * 放入了sc对象中
+		 */
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		WebApplicationContext wac = null;
 
+		/**
+		 * webApplicationContext对象是在创建DispatcherServlet的时候存放进来的一个
+		 * spring mvc Web容器，以下处理逻辑和ContextLoader类似
+		 */
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
 			if (wac instanceof ConfigurableWebApplicationContext) {
 				ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) wac;
+				//判断是否激活
 				if (!cwac.isActive()) {
 					// The context has not yet been refreshed -> provide services such as
 					// setting the parent context, setting the application context id, etc
-					if (cwac.getParent() == null) {
+					//设置上下文对象
+					if (cwac.getParent() == null) {//子容器会进入这个if
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
+						//绑定父子容器的关系
 						cwac.setParent(rootContext);
 					}
+					//为springMvc刷新上下文
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
@@ -670,7 +684,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		return wac;
 	}
 
+	//Mark!!!
 	protected void configureAndRefreshWebApplicationContext(ConfigurableWebApplicationContext wac) {
+		//为容器设置contextId
 		if (ObjectUtils.identityToString(wac).equals(wac.getId())) {
 			// The application context id is still set to its original default value
 			// -> assign a more useful id based on available information
@@ -684,6 +700,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			}
 		}
 
+		//把我们的当前工程的应用设置到spring web子容器中
 		wac.setServletContext(getServletContext());
 		wac.setServletConfig(getServletConfig());
 		wac.setNamespace(getNamespace());
@@ -699,6 +716,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
+		//刷新我们的子容器
 		wac.refresh();
 	}
 

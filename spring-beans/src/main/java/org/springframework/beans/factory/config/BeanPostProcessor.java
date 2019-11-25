@@ -55,6 +55,14 @@ import org.springframework.lang.Nullable;
  * @see ConfigurableBeanFactory#addBeanPostProcessor
  * @see BeanFactoryPostProcessor
  */
+
+/**
+ * BeanPostProcessor，可以在spring容器实例化bean之后，在执行bean的初始化方法前后，添加一些自己的处理逻辑。这里说的初始化方法，指的是下面两种：
+ * 1）bean实现了InitializingBean接口，对应的方法为afterPropertiesSet
+ *
+ * 2）在bean定义的时候，通过init-method设置的方法
+ */
+//Mark!!!
 public interface BeanPostProcessor {
 
 	/**

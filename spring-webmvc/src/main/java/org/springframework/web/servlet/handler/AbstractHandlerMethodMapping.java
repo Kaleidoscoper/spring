@@ -68,6 +68,7 @@ import org.springframework.web.servlet.HandlerMapping;
  * @param <T> the mapping for a {@link HandlerMethod} containing the conditions
  * needed to match the handler method to an incoming request.
  */
+//Mark 突破口
 public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMapping implements InitializingBean {
 
 	/**

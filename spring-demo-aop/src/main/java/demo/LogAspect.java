@@ -26,6 +26,26 @@ import java.util.Arrays;
  * @Aspect,若标注了就认为当前class是切面类型,然后通过class.getmethod获取所有method上的注解，解析注解类型，switch判断before,after,around等
  * 创建对应的通知对象
  * 2)、由于容器去获取所有的bean名称去获取class对象，然后去解析切面信息，整个过程十分耗时，所以解析出来的通知对象会加入缓存中
+ *
+ * 二、AOP源码思想实践，责任链模式，依赖查找(DL)、TCC分布式锁、分库分表，spring事务、spring mvc都是通过Aop实现
+ * 假如业务场景中需要校验:
+ * 	1、校验参数合法化
+ * 	2、校验业务互斥(办了A业务不能办B业务)
+ * 	。。。
+ * 	抽象校验接口IRule
+ * 	编写校验规则类，每个类实现一个校验规则，并将校验规则类共性的方法交给
+ * 	抽象类(抽象校验类)处理(模板设计模式)
+ * 	A业务需要1,2,3规则类
+ * 	B业务需要2,3,4规则类
+ * 	通过依赖查找可以注入多个规则类
+ * 	UserController{
+ *     @AutoWired
+ *     Map<String,IRule>
+ * 	}
+ * 	之后引入一个类似于ReflectiveMethodInvocation 这样的驱动类利用责任链模式去驱动校验规则执行(凡是有一个抛异常就不通过校验，每种业务可以配置需要校验的规则-
+ * 	即这个集合interceptorsAndDynamicMethodMatchers)
+ * 	之后A业务如果想添加一个规则，只需要添加一个配置，整个校验框架已经搭好，无需再添加其他代码。
+ * 	胜过加很多if else
  */
 @Aspect
 @Order(2)

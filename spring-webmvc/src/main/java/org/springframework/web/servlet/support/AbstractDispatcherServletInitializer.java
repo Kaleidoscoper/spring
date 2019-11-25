@@ -58,13 +58,48 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	public static final String DEFAULT_SERVLET_NAME = "dispatcher";
 
 
+	/**
+	 * 方法实现启到了承上启下的作用
+	 * super.onStartup(servletContext);会触发IOC根容器的启动
+	 * registerDispatcherServlet(servletContext);会触发子容器的创建
+	 * 父子容器都是AnnotationConfigWebApplicationContext类型
+	 * @param servletContext
+	 * @throws ServletException
+	 */
 	@Override
+	//Mark
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		//实例化我们的spring root上下文
+		/**
+		 * 1、创建我们的根容器，此时根容器还是空的！！！
+		 * 2、new 了我们的ContextLoaderListener
+		 * 3、把我们的根配置类保存到我们的根容器中
+		 * 3、把我们的ContextLoaderListener注册到servletContext中
+		 */
 		super.onStartup(servletContext);
+		//注册我们的DispatcherServlet，创建我们的spring web上下文对象
+		/**
+		 * 1、创建我们的子容器，此时根容器还是空的！！！
+		 * 2、创建我们的DispatcherServlet
+		 */
 		registerDispatcherServlet(servletContext);
 	}
 
 	/**
+	 * 方法实现说明，注册了我们的前端控制器对象
+	 * 			<servlet>
+	 *             <servlet-name>demo-dispatcher</servlet-name>
+	 *             <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	 *             <init-param>
+	 *                 <param-name>contextConfigLocation</param-name>
+	 *                 <param-value>classpath:spring/spring-*.xml</param-value>
+	 *             </init-param>
+	 *             <load-on-startup>1</load-on-startup>
+	 *         </servlet>
+	 *         <servlet-mapping>
+	 *             <servlet-name>demo-dispatcher</servlet-name>
+	 *             <url-pattern>/</url-pattern>
+	 *         </servlet-mapping>
 	 * Register a {@link DispatcherServlet} against the given servlet context.
 	 * <p>This method will create a {@code DispatcherServlet} with the name returned by
 	 * {@link #getServletName()}, initializing it with the application context returned
@@ -76,22 +111,32 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 * @param servletContext the context to register the servlet against
 	 */
 	protected void registerDispatcherServlet(ServletContext servletContext) {
+		//获取我们的DispatcherServlet名称
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		//创建我们的WebApplicationContext，子容器
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
+		/**
+		 * 创建我们的DispatcherServlet,tomcat会对其进行生命周期管理
+		 */
 		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
+		/**
+		 * 获取我们的ServletApplicationContextInitializers对象(就是bean?)，把他们注册到我们的dispatcherServlet中
+		 */
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
 
+		//注册我们的dispatcherServlet
 		ServletRegistration.Dynamic registration = servletContext.addServlet(servletName, dispatcherServlet);
 		if (registration == null) {
 			throw new IllegalStateException("Failed to register servlet with name '" + servletName + "'. " +
 					"Check if there is another servlet registered under the same name.");
 		}
 
+		//设置我们的dispatcherServlet属性
 		registration.setLoadOnStartup(1);
 		registration.addMapping(getServletMappings());
 		registration.setAsyncSupported(isAsyncSupported());

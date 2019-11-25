@@ -89,6 +89,8 @@ public class ContextLoaderListener extends ContextLoader implements ServletConte
 	 * @param context the application context to manage
 	 * @see #contextInitialized(ServletContextEvent)
 	 * @see #contextDestroyed(ServletContextEvent)
+	 *
+	 * 给我们的spring注解配置版本使用的构造器
 	 */
 	public ContextLoaderListener(WebApplicationContext context) {
 		super(context);
@@ -97,6 +99,8 @@ public class ContextLoaderListener extends ContextLoader implements ServletConte
 
 	/**
 	 * Initialize the root web application context.
+	 * 初始化根容器的Web上下文对象
+	 * 为我们的父容器填充Service Dao对象,调用refresh方法
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent event) {

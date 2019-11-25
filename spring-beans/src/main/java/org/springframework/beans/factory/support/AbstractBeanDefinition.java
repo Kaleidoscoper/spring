@@ -56,6 +56,7 @@ import org.springframework.util.StringUtils;
  * @see ChildBeanDefinition
  */
 @SuppressWarnings("serial")
+//Mark!!!
 public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccessor
 		implements BeanDefinition, Cloneable {
 
@@ -142,18 +143,24 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private volatile Object beanClass;
 
 	@Nullable
+	//bean的作用范围
 	private String scope = SCOPE_DEFAULT;
 
+	//当前bean是不是抽象的
 	private boolean abstractFlag = false;
 
 	@Nullable
+	//当前bean是不是懒加载的
 	private Boolean lazyInit;
 
+	//默认的注入模型是0,不支持外部注入
 	private int autowireMode = AUTOWIRE_NO;
 
+	//默认的依赖检查模式
 	private int dependencyCheck = DEPENDENCY_CHECK_NONE;
 
 	@Nullable
+	//当前的bean被创建，必须要依赖哪个bean被创建
 	private String[] dependsOn;
 
 	private boolean autowireCandidate = true;

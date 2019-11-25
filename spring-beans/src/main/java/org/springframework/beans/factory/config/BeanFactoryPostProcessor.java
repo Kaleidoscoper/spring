@@ -60,6 +60,14 @@ import org.springframework.beans.BeansException;
  * @see PropertyResourceConfigurer
  */
 @FunctionalInterface
+/**
+ * 注意：BeanPostProcessor是在spring容器加载了bean的定义文件并且实例化bean之后执行的。BeanPostProcessor的执行顺序是在BeanFactoryPostProcessor之后。
+ * 实现该接口，可以在spring的bean创建之前，修改bean的定义属性。也就是说，S
+ * pring允许BeanFactoryPostProcessor在容器实例化任何其它bean之前读取配置元数据，并可以根据需要进行修改，
+ * 例如可以把bean的scope从singleton改为prototype，也可以把property的值给修改掉。可以同时配置多个BeanFactoryPostProcessor，
+ * 并通过设置'order'属性来控制各个BeanFactoryPostProcessor的执行次序
+ */
+//Mark!!!
 public interface BeanFactoryPostProcessor {
 
 	/**

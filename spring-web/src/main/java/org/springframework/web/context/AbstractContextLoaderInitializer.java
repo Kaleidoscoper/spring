@@ -45,22 +45,45 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 	protected final Log logger = LogFactory.getLog(getClass());
 
 
-	@Override
+	@Override //Mark
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		registerContextLoaderListener(servletContext);
 	}
 
-	/**
+	/**方法实现注册我们的上下文监听对象
 	 * Register a {@link ContextLoaderListener} against the given servlet context. The
 	 * {@code ContextLoaderListener} is initialized with the application context returned
 	 * from the {@link #createRootApplicationContext()} template method.
 	 * @param servletContext the servlet context to register the listener against
 	 */
+	//Mark
 	protected void registerContextLoaderListener(ServletContext servletContext) {
+		//创建我们的根的上下文环境WebApplicationContext(AnnotationConfigWebApplicationContext,根容器)对象
+		//但是是由他的子类AbstractAnnotationConfigDispatcherServletInitializer实现
 		WebApplicationContext rootAppContext = createRootApplicationContext();
+		//创建的WebApplicationContext不为空
 		if (rootAppContext != null) {
+			/**
+			 * 	   <listener>
+			 *         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+			 *     </listener>
+			 *     <context-param>
+			 *         <param-name>contextConfigLocation</param-name>
+			 *         <param-value>classpath:applicationContext.xml</param-value><!--spring.xml -->
+			 *     </context-param>
+			 *  创建一个监听器对象
+			 */
+			/**
+			 * 这是注解配置会进入的逻辑，调用ContextLoaderListener有参构造器，传入一个根容器，xml版本调用了无参构造器
+			 * 所以ContextLoader:283会额外创建根容器
+			 */
 			ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
+			/**
+			 * 1、获取根应用的getRootApplicationContextInitializers(就是bean?)
+			 * 2、把初始化器设置到监听器中
+			 */
 			listener.setContextInitializers(getRootApplicationContextInitializers());
+			//把监听器加入到我们的上下文中
 			servletContext.addListener(listener);
 		}
 		else {
@@ -79,6 +102,8 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 	 * @return the root application context, or {@code null} if a root context is not
 	 * desired
 	 * @see org.springframework.web.servlet.support.AbstractDispatcherServletInitializer
+	 * //Mark
+	 * 抽象方法创建我们的根容器，但是是由他的子类AbstractAnnotationConfigDispatcherServletInitializer实现
 	 */
 	@Nullable
 	protected abstract WebApplicationContext createRootApplicationContext();

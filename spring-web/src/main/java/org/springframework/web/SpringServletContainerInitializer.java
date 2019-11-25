@@ -26,6 +26,7 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.WebServlet;
 
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.lang.Nullable;
@@ -109,6 +110,16 @@ import org.springframework.util.ReflectionUtils;
  * @see #onStartup(Set, ServletContext)
  * @see WebApplicationInitializer
  */
+
+/**！！！
+ * 类的描述：Spring应用一启动(tomcat一启动的时候) 就会去扫描当前应用下导入Jar包的META-INF/services的(Java的SPI机制!!!!,这种
+ * 机制也可以在不配置Web.xml的前提下注册Web容器中的三大组件:servlet,listener,filter!!!)
+ * javax.servlet.ServletContainerInitializer名称中的内容，该内容就是ServletContainerInitializer的实现类的全类名
+ * 名称，然后会调用该实现的onStartUp方法，并且我们可以在ServletContainerInitializer的实现类上标注@HandlesTypes，配置
+ * WebApplicationInitializer接口，那么所有WebApplicationInitializer接口的实现类就会被传递到onStartup方法的入参中，
+ * 然后判断传递进来的WebApplicationInitializer实现如果不是接口不是抽象类，就会通过反射调用生成对象
+ */
+//Mark
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
@@ -138,19 +149,38 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	 * @see WebApplicationInitializer#onStartup(ServletContext)
 	 * @see AnnotationAwareOrderComparator
 	 */
+	/**
+	 * 方法实现说明，容器启动的时候会调用该方法，并传入@HandlesTypes(WebApplicationInitializer.class)
+	 * 类型的所有子类作为 webAppInitializerClasses入参
+	 * @param webAppInitializerClasses 感兴趣的类的集合
+	 * @param servletContext 应用的上下文
+	 * @throws ServletException
+	 * 1、springMVC启动
+	 * tomcat.Startup{
+	 *     SpringServletContainerInitializer.onStartup(){
+	 *
+	 *     }
+	 * }
+	 */
+
 	@Override
+	//Mark
 	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
 			throws ServletException {
 
 		List<WebApplicationInitializer> initializers = new LinkedList<>();
 
+		//传入感兴趣类WebApplicationInitializer的所有子类
 		if (webAppInitializerClasses != null) {
+			//循环判断感兴趣的类
 			for (Class<?> waiClass : webAppInitializerClasses) {
 				// Be defensive: Some servlet containers provide us with invalid classes,
 				// no matter what @HandlesTypes says...
+				//判断是不是抽象类或者接口
 				if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
 						WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
 					try {
+						//通过反射创建感兴趣的类，然后加入到initializers
 						initializers.add((WebApplicationInitializer)
 								ReflectionUtils.accessibleConstructor(waiClass).newInstance());
 					}
@@ -167,8 +197,10 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 		}
 
 		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
+		//若我们的WebApplicationInitializer的实现类实现了Ordered接口或是标注了@Order注解，则会进行排序
 		AnnotationAwareOrderComparator.sort(initializers);
 		for (WebApplicationInitializer initializer : initializers) {
+			//依次循环调用我们感兴趣类的onStartup方法
 			initializer.onStartup(servletContext);
 		}
 	}
